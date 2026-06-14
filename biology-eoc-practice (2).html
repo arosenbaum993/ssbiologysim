@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biology EOC Practice — Georgia Milestones</title>
+<style>
+  /* ---------- Design tokens ----------
+     Focused remediation assessment for 10th-grade Biology, coastal Georgia.
+     System fonts only (no external CDNs) so it loads on filtered school networks. */
+  :root{
+    --ink:#10242b;          /* deep ocean ink, body text */
+    --ink-soft:#3f5a62;
+    --paper:#f7f5ef;        /* warm off-white */
+    --card:#ffffff;
+    --teal:#0e5a64;         /* primary */
+    --teal-deep:#093f47;
+    --teal-tint:#e3eef0;
+    --amber:#c8741a;        /* action accent */
+    --amber-deep:#a85c10;
+    --line:#d8d3c7;
+    --good:#1f7a4d;
+    --flag:#b4452c;
+    --shadow:0 1px 2px rgba(9,63,71,.08),0 8px 24px rgba(9,63,71,.07);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--paper);line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 80px}
+  h1{font-size:1.5rem;line-height:1.2;margin:0 0 .25rem;letter-spacing:-.01em}
+  h2{font-size:1.15rem;margin:0 0 .5rem;letter-spacing:-.01em}
+  p{margin:0 0 1rem}
+  .muted{color:var(--ink-soft)}
+  .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:.4rem}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}
+
+  /* Buttons */
+  .btn{
+    appearance:none;border:none;cursor:pointer;font:inherit;font-weight:650;
+    padding:13px 22px;border-radius:11px;background:var(--amber);color:#fff;
+    transition:background .15s ease, transform .04s ease;
+  }
+  .btn:hover{background:var(--amber-deep)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{background:#c9c3b6;cursor:not-allowed}
+  .btn.secondary{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+  .btn.secondary:hover{background:var(--teal-tint)}
+  .btn:focus-visible,.opt:focus-within,input:focus-visible,.tile:focus-visible,.zone:focus-visible{
+    outline:3px solid var(--amber);outline-offset:2px;
+  }
+
+  /* Intro / name */
+  .field{margin:0 0 1.2rem}
+  label{display:block;font-weight:650;margin-bottom:.4rem}
+  input[type=text]{
+    width:100%;padding:13px 14px;font:inherit;border:1.5px solid var(--line);
+    border-radius:11px;background:#fff;color:var(--ink);
+  }
+  .rules{list-style:none;padding:0;margin:0 0 1.4rem}
+  .rules li{padding:.45rem 0 .45rem 1.7rem;position:relative;color:var(--ink-soft)}
+  .rules li::before{content:"";position:absolute;left:0;top:.95rem;width:8px;height:8px;border-radius:2px;background:var(--teal)}
+
+  /* Progress spine */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .count{font-weight:700;color:var(--teal-deep);font-variant-numeric:tabular-nums}
+  .spine{height:6px;border-radius:99px;background:var(--teal-tint);overflow:hidden;margin-bottom:22px}
+  .spine>span{display:block;height:100%;background:var(--teal);width:0;transition:width .25s ease}
+
+  /* Question */
+  .qtype{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-deep);margin-bottom:.5rem}
+  .stem{font-size:1.12rem;font-weight:600;margin-bottom:1.1rem}
+
+  /* Options */
+  .opts{display:flex;flex-direction:column;gap:10px;margin:0 0 1rem}
+  .opt{
+    display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1.5px solid var(--line);
+    border-radius:11px;background:#fff;cursor:pointer;transition:border-color .12s,background .12s;
+  }
+  .opt:hover{border-color:var(--teal)}
+  .opt.chosen{border-color:var(--teal);background:var(--teal-tint)}
+  .opt input{margin-top:.2rem;width:18px;height:18px;accent-color:var(--teal);flex:0 0 auto}
+  .opt .txt{flex:1}
+  .opt.locked{cursor:default;opacity:.92}
+  .opt.reveal-correct{border-color:var(--good);background:#e9f4ee}
+
+  .hint{font-size:.85rem;color:var(--ink-soft);margin:-.3rem 0 1rem}
+
+  /* Drag/place */
+  .pool{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 1.1rem}
+  .tile{
+    font:inherit;font-weight:600;padding:11px 14px;border-radius:10px;border:1.5px solid var(--teal);
+    background:#fff;color:var(--teal-deep);cursor:pointer;
+  }
+  .tile.picked{background:var(--teal);color:#fff}
+  .tile.placed{opacity:.35;pointer-events:none}
+  .zones{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+  @media(max-width:520px){.zones{grid-template-columns:1fr}}
+  .zone{
+    border:1.5px dashed var(--line);border-radius:12px;padding:12px;min-height:84px;background:#fff;cursor:pointer;
+  }
+  .zone.active{border-color:var(--amber);background:#fff7ee}
+  .zone .zlabel{font-weight:700;font-size:.92rem;color:var(--teal-deep);margin-bottom:.5rem}
+  .zone .slot{display:inline-block;font-weight:600;background:var(--teal-tint);color:var(--teal-deep);padding:7px 11px;border-radius:8px;margin:0 6px 6px 0}
+  .zone .slot button{border:none;background:none;color:var(--teal-deep);cursor:pointer;font-weight:800;margin-left:6px}
+
+  /* Vocab flags */
+  .vocab{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+  .vocab .vlabel{font-size:.82rem;font-weight:700;color:var(--ink-soft);margin-bottom:.5rem}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    font:inherit;font-size:.85rem;font-weight:600;padding:7px 12px;border-radius:99px;
+    border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer;
+  }
+  .chip.on{border-color:var(--flag);background:#fbeae6;color:var(--flag)}
+  .chip .x{margin-right:4px}
+
+  /* Feedback */
+  .feedback{margin:14px 0 0;padding:16px;border-radius:12px;border:1px solid var(--line);background:#fbfaf6}
+  .feedback.recorded{border-color:var(--teal-tint);background:var(--teal-tint)}
+  .feedback h3{margin:0 0 .4rem;font-size:.95rem}
+  .feedback.teach h3{color:var(--amber-deep)}
+  .feedback.recorded h3{color:var(--teal-deep)}
+
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+
+  /* Results */
+  .scorebig{font-size:3rem;font-weight:800;letter-spacing:-.02em;color:var(--teal-deep);line-height:1}
+  .level{display:inline-block;margin-top:.4rem;font-weight:700;padding:6px 14px;border-radius:99px;background:var(--teal-tint);color:var(--teal-deep)}
+  table.dom{width:100%;border-collapse:collapse;margin:18px 0 4px}
+  table.dom th,table.dom td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  table.dom th{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft)}
+  .bar{height:8px;border-radius:99px;background:var(--teal-tint);overflow:hidden;width:120px;display:inline-block;vertical-align:middle}
+  .bar>span{display:block;height:100%;background:var(--teal)}
+  .status{font-size:.9rem;margin-top:14px;color:var(--ink-soft)}
+
+  .hide{display:none}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro" class="card">
+    <div class="eyebrow">Georgia Milestones &middot; Biology EOC</div>
+    <h1>Biology Practice Test</h1>
+    <p class="muted">A practice run before your retake. Work each question on its own, then move forward. You cannot go back, just like the real test.</p>
+    <ul class="rules">
+      <li>One question at a time. Answer, then select <strong>Submit answer</strong>.</li>
+      <li>If you miss one, you will get an explanation to help you learn it.</li>
+      <li>Tap any vocabulary word you are unsure of. Your teacher will see what to review.</li>
+      <li>When you finish, your results are sent to your teacher automatically.</li>
+    </ul>
+    <div class="field">
+      <label for="name">Type your full name to begin</label>
+      <input type="text" id="name" autocomplete="off" placeholder="First and last name" />
+    </div>
+    <button class="btn" id="start">Start practice test</button>
+  </section>
+
+  <!-- ============ TEST ============ -->
+  <section id="test" class="hide">
+    <div class="topbar">
+      <span class="count" id="count">Question 1 of 27</span>
+      <button class="btn secondary" id="flagToggleHint" style="font-size:.8rem;padding:8px 12px" disabled>&#x1F6A9; Flag vocab below</button>
+    </div>
+    <div class="spine"><span id="spinefill"></span></div>
+
+    <div class="card">
+      <div class="qtype" id="qtype">Multiple choice</div>
+      <div class="stem" id="stem"></div>
+      <div id="answerArea"></div>
+      <div class="vocab">
+        <div class="vlabel">&#x1F6A9; Tap any word you don't know:</div>
+        <div class="chips" id="vocabChips"></div>
+      </div>
+      <div id="feedback"></div>
+      <div class="actions">
+        <button class="btn" id="submitAns" disabled>Submit answer</button>
+        <button class="btn hide" id="nextBtn">Next &rarr;</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section id="results" class="hide">
+    <div class="card">
+      <div class="eyebrow">Practice complete</div>
+      <h1 id="resName">Results</h1>
+      <div class="scorebig"><span id="resPct">0</span>%</div>
+      <div class="level" id="resLevel">&nbsp;</div>
+      <p class="muted" style="margin-top:1rem"><span id="resCorrect">0</span> of <span id="resTotal">32</span> points earned.</p>
+
+      <h2 style="margin-top:1.4rem">By topic</h2>
+      <table class="dom">
+        <thead><tr><th>Topic</th><th>Score</th><th></th></tr></thead>
+        <tbody id="domBody"></tbody>
+      </table>
+
+      <div class="status" id="submitStatus">Sending your results to your teacher&hellip;</div>
+      <div class="actions">
+        <button class="btn secondary hide" id="resubmit">Send again</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   CONFIG  — edit these as needed
+   ========================================================= */
+var WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwad5ZahUEJtKDMFgAXTV01dBzk7YHJbiRHUQ-aNzmm-RZZhmw99m7iqWh8TUTslbe3/exec";
+
+// When false: after a wrong answer, show a teaching explanation but DO NOT
+// reveal or highlight the correct choice (protects item security for the retake).
+// When true: explanation also highlights the correct answer.
+var REVEAL_CORRECT_ANSWER = false;
+
+// Local practice achievement bands (raw % of points). NOTE: the real EOC uses
+// scale-score cuts, not raw percent — these are practice estimates. Adjust freely.
+var LEVEL_BANDS = [
+  { min: 85, name: "Distinguished Learner" },
+  { min: 70, name: "Proficient Learner" },
+  { min: 50, name: "Developing Learner" },
+  { min: 0,  name: "Beginning Learner" }
+];
+
+// Canonical domain keys — MUST match the Apps Script DOMAINS array exactly.
+var DOMAIN_KEYS = {
+  CELLS: "Cells (SB1)",
+  CGH:   "Cellular Genetics & Heredity (SB2-3)",
+  CLASS: "Classification & Phylogeny (SB4)",
+  ECO:   "Ecology (SB5)",
+  EVO:   "Theory of Evolution (SB6)"
+};
+
+/* =========================================================
+   ITEM BANK
+   Aligned to GA Biology EOC blueprint (domain weighting) and
+   ALDs (DOK mix). DOK by points -> L1 ~16%, L2 ~56%, L3 ~28%.
+   type: 'single' | 'multi' | 'dragdrop'
+   For single/multi, options carry correct:true; rendered SHUFFLED
+   so the key is never a fixed letter. Distractors length-balanced
+   so the key is not the longest choice.
+   ========================================================= */
+var ITEMS = [
+  /* ---------------- CELLS (SB1) — 6 pts ---------------- */
+  { id:"C1", domain:DOMAIN_KEYS.CELLS, std:"SB1a", dok:1, type:"single", points:1,
+    stem:"A cell that secretes large amounts of protein would contain especially high numbers of which structure?",
+    options:[
+      {t:"Ribosomes, where amino acids are joined into proteins", correct:true},
+      {t:"Lysosomes, where worn-out organelles are broken down", correct:false},
+      {t:"Vacuoles, where the cell stores water and wastes", correct:false},
+      {t:"Centrioles, which separate chromosomes during division", correct:false}
+    ],
+    vocab:["ribosome","lysosome","vacuole","organelle"],
+    explain:"A protein-secreting cell mass-produces proteins, so look for the organelle whose job is assembling proteins from amino acids. Re-read each stated function and match it to protein production, not to storage, digestion, or chromosome movement." },
+
+  { id:"C2", domain:DOMAIN_KEYS.CELLS, std:"SB1d", dok:2, type:"single", points:1,
+    stem:"A plant cell is placed in a salt solution with a much higher solute concentration than the cell's cytoplasm. What will most likely happen?",
+    options:[
+      {t:"Water will leave the cell and it will shrink (plasmolyze).", correct:true},
+      {t:"Water will rush into the cell and it will swell and burst.", correct:false},
+      {t:"Salt will be actively pumped out to balance the cell.", correct:false},
+      {t:"Nothing will change because the cell wall blocks all water.", correct:false}
+    ],
+    vocab:["osmosis","solute","hypertonic","plasmolysis"],
+    explain:"In osmosis, water moves toward the side with more dissolved solute. Decide which side has more solute here, send the water that way, then determine whether the cell gains or loses water. Active pumping of salt is not osmosis, and a cell wall does not stop water movement." },
+
+  { id:"C3", domain:DOMAIN_KEYS.CELLS, std:"SB1e", dok:3, type:"single", points:1,
+    stem:"A sealed, lighted terrarium holds only a small plant. Over one full day-night cycle, how do photosynthesis and respiration move carbon in this system?",
+    options:[
+      {t:"Photosynthesis fixes CO\u2082 into sugar in light; respiration releases CO\u2082 from sugar at all times; carbon cycles.", correct:true},
+      {t:"The plant performs only photosynthesis, so it continuously removes all carbon dioxide from the sealed air.", correct:false},
+      {t:"The plant performs only respiration, so carbon dioxide steadily builds until the trapped air is fully saturated.", correct:false},
+      {t:"Because the terrarium is sealed, carbon atoms are destroyed and permanently leave the living system.", correct:false}
+    ],
+    vocab:["photosynthesis","cellular respiration","carbon cycle"],
+    explain:"Track the carbon atoms. Photosynthesis pulls CO\u2082 from the air into sugar; respiration does the reverse and runs day and night in living cells. In a sealed system atoms are not created or destroyed, so ask where carbon goes when each process runs, and whether either process ever fully stops." },
+
+  { id:"C4", domain:DOMAIN_KEYS.CELLS, std:"SB1b", dok:2, type:"single", points:1,
+    stem:"How do the cells produced by meiosis differ from those produced by mitosis?",
+    options:[
+      {t:"Meiosis makes four genetically varied cells with half the chromosome number.", correct:true},
+      {t:"Meiosis makes two genetically identical cells that keep the parent cell's full chromosome number.", correct:false},
+      {t:"Meiosis makes identical cells used to repair and grow body tissues.", correct:false},
+      {t:"Meiosis makes cells with twice the parent cell's chromosome number.", correct:false}
+    ],
+    vocab:["meiosis","mitosis","chromosome","gamete"],
+    explain:"Check two things in each option: how many cells form, and whether the chromosome number stays the same or is halved. Mitosis copies cells for growth and repair; meiosis makes gametes. Match the description to the process that produces sex cells with variation." },
+
+  { id:"C5", domain:DOMAIN_KEYS.CELLS, std:"SB1c", dok:2, type:"dragdrop", points:2,
+    stem:"Match each macromolecule to the building block (monomer) it is made from.",
+    tiles:["Amino acids","Nucleotides","Simple sugars (monosaccharides)","Fatty acids and glycerol"],
+    zones:["Protein","Nucleic acid (DNA/RNA)","Carbohydrate","Lipid"],
+    map:{ "Protein":"Amino acids", "Nucleic acid (DNA/RNA)":"Nucleotides", "Carbohydrate":"Simple sugars (monosaccharides)", "Lipid":"Fatty acids and glycerol" },
+    vocab:["macromolecule","monomer","protein","nucleic acid","carbohydrate","lipid"],
+    explain:"Each macromolecule is built from one repeating type of building block. Connect each large molecule to the small unit it is assembled from. If two seem close, recall which monomer carries the genetic code versus which links into chains that fold into enzymes." },
+
+  /* ---------------- CELLULAR GENETICS & HEREDITY (SB2-3) — 7 pts ---------------- */
+  { id:"G1", domain:DOMAIN_KEYS.CGH, std:"SB2a", dok:2, type:"single", points:1,
+    stem:"Which sequence correctly shows how genetic information is expressed in a cell?",
+    options:[
+      {t:"DNA is transcribed into RNA, which is translated into protein.", correct:true},
+      {t:"Protein is transcribed into RNA, which is translated into DNA.", correct:false},
+      {t:"RNA is replicated into DNA, which is translated into carbohydrate.", correct:false},
+      {t:"DNA is translated into protein, which is transcribed into RNA.", correct:false}
+    ],
+    vocab:["transcription","translation","gene expression","mRNA"],
+    explain:"Two processes connect three molecules. Transcription copies DNA's message into RNA; translation reads RNA to build protein. Put them in order so information flows from the genetic blueprint to the working molecule, and watch options that swap the words transcription and translation." },
+
+  { id:"G2", domain:DOMAIN_KEYS.CGH, std:"SB3b", dok:2, type:"single", points:1,
+    stem:"Two pea plants heterozygous for tallness (Tt \u00D7 Tt) are crossed, where tall (T) is dominant to short (t). What is the probability that an offspring is short?",
+    options:[
+      {t:"25%", correct:true},
+      {t:"50%", correct:false},
+      {t:"75%", correct:false},
+      {t:"100%", correct:false}
+    ],
+    vocab:["heterozygous","dominant","recessive","genotype","phenotype"],
+    explain:"Set up the cross Tt \u00D7 Tt in a Punnett square and list the four genotype outcomes. A plant is short only when it inherits two recessive alleles. Count how many of the four boxes meet that condition, then convert to a percentage." },
+
+  { id:"G3", domain:DOMAIN_KEYS.CGH, std:"SB2b", dok:3, type:"single", points:1,
+    stem:"During meiosis, homologous chromosomes exchange matching segments before the cell divides. What is the main genetic consequence?",
+    options:[
+      {t:"New allele combinations form on each chromosome, raising variation among gametes.", correct:true},
+      {t:"The chromosome number in every resulting gamete is doubled rather than halved.", correct:false},
+      {t:"All gametes produced by that parent end up genetically identical to one another.", correct:false},
+      {t:"Harmful mutations are detected and repaired so the offspring are completely error-free.", correct:false}
+    ],
+    vocab:["crossing over","homologous chromosomes","allele","genetic variation","meiosis"],
+    explain:"The process described is crossing over. Ask what swapping segments does to the arrangement of alleles, and whether that raises or lowers variety in the resulting sex cells. Rule out options about chromosome number (a separate meiosis event) and about mutation repair." },
+
+  { id:"G4", domain:DOMAIN_KEYS.CGH, std:"SB2c", dok:1, type:"single", points:1,
+    stem:"Gel electrophoresis separates fragments of DNA primarily according to which property?",
+    options:[
+      {t:"The size, or length, of each fragment as it moves through the gel.", correct:true},
+      {t:"The natural color that each different DNA fragment gives off.", correct:false},
+      {t:"The temperature at which each DNA fragment was first collected.", correct:false},
+      {t:"The number of proteins that happen to be attached to each fragment.", correct:false}
+    ],
+    vocab:["gel electrophoresis","biotechnology","DNA fragment"],
+    explain:"Recall how DNA moves through a gel under an electric field: smaller pieces travel differently from larger pieces. Decide which physical property the gel is actually sorting by, and set aside properties the technique does not measure." },
+
+  { id:"G5", domain:DOMAIN_KEYS.CGH, std:"SB3c", dok:2, type:"dragdrop", points:2,
+    stem:"Sort each statement under the reproduction strategy whose advantage it describes.",
+    tiles:["Offspring vary genetically, which may help them survive change","Variation provides raw material for natural selection","A single parent can reproduce alone","Reproduction is fast and energy-efficient"],
+    zones:["Sexual reproduction advantage","Asexual reproduction advantage"],
+    map:{ "Sexual reproduction advantage":["Offspring vary genetically, which may help them survive change","Variation provides raw material for natural selection"], "Asexual reproduction advantage":["A single parent can reproduce alone","Reproduction is fast and energy-efficient"] },
+    vocab:["sexual reproduction","asexual reproduction","genetic variation","natural selection"],
+    explain:"Sort by the core trade-off: sexual reproduction creates variation but needs two parents and more energy; asexual reproduction is fast and needs only one parent but produces clones. Place each statement under the strategy whose strength it describes." },
+
+  { id:"G6", domain:DOMAIN_KEYS.CGH, std:"SB3b", dok:3, type:"single", points:1,
+    stem:"Two parents who do not show a certain recessive disorder have a child who does. What does this reveal about the parents' genotypes?",
+    options:[
+      {t:"Each parent must carry one hidden copy of the recessive allele.", correct:true},
+      {t:"Both parents must have two copies of the recessive allele.", correct:false},
+      {t:"One parent is homozygous dominant and the other is affected.", correct:false},
+      {t:"Neither parent can carry the allele, so a brand-new gene was created.", correct:false}
+    ],
+    vocab:["carrier","recessive","homozygous","heterozygous","genotype","pedigree"],
+    explain:"An unaffected parent cannot have two recessive alleles, yet the child has two. Work backward: where did the child's two recessive alleles come from if each parent shows no disorder? Decide what each parent must be carrying without showing it." },
+
+  /* ---------------- CLASSIFICATION & PHYLOGENY (SB4) — 5 pts ---------------- */
+  { id:"P1", domain:DOMAIN_KEYS.CLASS, std:"SB4b", dok:3, type:"single", points:1,
+    stem:"On a cladogram, species A and B share a more recent common ancestor with each other than either does with species C. Which statement is best supported?",
+    options:[
+      {t:"A and B are more closely related to each other than either is to C.", correct:true},
+      {t:"Species C is the direct ancestor of both A and B.", correct:false},
+      {t:"A, B, and C are all exactly equally related to one another because they appear together on one tree.", correct:false},
+      {t:"Species A is more closely related to C than it is to B.", correct:false}
+    ],
+    vocab:["cladogram","common ancestor","phylogeny","clade"],
+    explain:"On a branching tree, relatedness depends on how recently two lineages share a common ancestor, not on distance across the page. Find which pair branches off together most recently, and remember that a species at the tree's tips is not the ancestor of the others." },
+
+  { id:"P2", domain:DOMAIN_KEYS.CLASS, std:"SB4c", dok:1, type:"single", points:1,
+    stem:"Which feature best explains why viruses are generally not classified as living organisms?",
+    options:[
+      {t:"They cannot reproduce on their own and must hijack a host cell.", correct:true},
+      {t:"They are made entirely of carbohydrates and contain no genetic material.", correct:false},
+      {t:"They are always larger than the cells they infect and lack any protein.", correct:false},
+      {t:"They carry out their own photosynthesis to make food independently.", correct:false}
+    ],
+    vocab:["virus","host cell","reproduction"],
+    explain:"Living things carry out life processes, including reproduction, on their own. Identify what a virus cannot do without a host. Check each option against what viruses actually contain (genetic material inside a protein coat) and discard the false claims." },
+
+  { id:"P3", domain:DOMAIN_KEYS.CLASS, std:"SB4a", dok:2, type:"single", points:1,
+    stem:"Mitochondria and chloroplasts each contain their own small loop of DNA and reproduce by dividing. This is evidence that they:",
+    options:[
+      {t:"descended from free-living prokaryotes engulfed by an early cell.", correct:true},
+      {t:"are non-living crystals that simply formed inside the cytoplasm.", correct:false},
+      {t:"were assembled recently by the cell's ribosomes from scratch.", correct:false},
+      {t:"function exactly like the nucleus in storing all of the cell's DNA.", correct:false}
+    ],
+    vocab:["endosymbiosis","mitochondria","chloroplast","prokaryote","eukaryote"],
+    explain:"Ask why an organelle would have its own DNA and divide on its own, the way a bacterium does. Connect those bacteria-like traits to the idea of one cell taking up another long ago. Eliminate options that treat the organelle as non-living or as just another copy of the nucleus." },
+
+  { id:"P4", domain:DOMAIN_KEYS.CLASS, std:"SB4b", dok:3, type:"dragdrop", points:2,
+    stem:"Match each shared trait to the group it defines. The traits range from very broad to very specific.",
+    tiles:["Backbone (vertebral column)","Hair and the production of milk","Feathers","Amniotic egg (egg with protective membranes)"],
+    zones:["Vertebrates (broadest)","Amniotes (reptiles, birds, mammals)","Mammals","Birds"],
+    map:{ "Vertebrates (broadest)":"Backbone (vertebral column)", "Amniotes (reptiles, birds, mammals)":"Amniotic egg (egg with protective membranes)", "Mammals":"Hair and the production of milk", "Birds":"Feathers" },
+    vocab:["shared derived trait","vertebrate","amniote","clade"],
+    explain:"Each trait marks a group at a different level of the tree. A backbone is shared very broadly; the amniotic egg unites several land-vertebrate groups; hair and feathers are narrower still. Match each trait to the group for which it is the defining shared characteristic." },
+
+  /* ---------------- ECOLOGY (SB5) — 8 pts ---------------- */
+  { id:"E1", domain:DOMAIN_KEYS.ECO, std:"SB5b", dok:1, type:"single", points:1,
+    stem:"In a food chain, about how much of the energy at one trophic level is available to the next level up?",
+    options:[
+      {t:"About 10 percent; most energy is lost as heat at each step.", correct:true},
+      {t:"About 90 percent; nearly all of the energy passes upward.", correct:false},
+      {t:"Exactly 100 percent; energy is fully conserved in food chains.", correct:false},
+      {t:"About 50 percent; energy is split evenly between two levels.", correct:false}
+    ],
+    vocab:["trophic level","energy pyramid","food chain"],
+    explain:"Energy is lost, mostly as heat, every time it transfers between trophic levels, so only a small fraction reaches the next level. Recall the standard rule of thumb for how much energy moves up one step, and reject options that imply little or no loss." },
+
+  { id:"E2", domain:DOMAIN_KEYS.ECO, std:"SB5a", dok:3, type:"single", points:1,
+    stem:"A predator and its prey share an area. When prey numbers rise sharply, the predator population rises a short time later; when prey crashes, predators decline. Which conclusion is best supported?",
+    options:[
+      {t:"Predator numbers depend on prey availability, lagging slightly behind it.", correct:true},
+      {t:"Predators and prey reproduce at exactly identical times with no delay between them at all.", correct:false},
+      {t:"The prey population is controlled only by the weather, not by predators.", correct:false},
+      {t:"Removing every predator would have no effect on the prey population.", correct:false}
+    ],
+    vocab:["predator","prey","population","limiting factor","carrying capacity"],
+    explain:"Read the timing: which population changes first, and which follows? A delay between the two is the key clue. Decide what that lag says about which population is driving the other, and avoid conclusions the data do not actually show." },
+
+  { id:"E3", domain:DOMAIN_KEYS.ECO, std:"SB5c", dok:3, type:"single", points:1,
+    stem:"A sea star preys on mussels that would otherwise crowd out other species on a rocky shore. Predict the most likely result if the sea stars are removed.",
+    options:[
+      {t:"Mussels take over the space and overall species diversity drops.", correct:true},
+      {t:"Species diversity increases because a predator has been removed.", correct:false},
+      {t:"The ecosystem stays the same because one species rarely matters.", correct:false},
+      {t:"Mussels disappear entirely, leaving only bare rock behind.", correct:false}
+    ],
+    vocab:["keystone species","biodiversity","ecosystem stability","predator"],
+    explain:"The sea star is described as keeping mussels in check. Ask what happens to the mussels once that control is gone, and then what happens to the other species competing for the same space. Trace the chain of effects to its impact on overall diversity." },
+
+  { id:"E4", domain:DOMAIN_KEYS.ECO, std:"SB5d", dok:2, type:"single", points:1,
+    stem:"A factory releases excess nitrogen and phosphorus into a lake, triggering algal blooms that kill fish. Which solution best reduces this specific problem?",
+    options:[
+      {t:"Treat the factory's wastewater to remove nutrients before it reaches the lake.", correct:true},
+      {t:"Add many more fish to the lake each summer so they can eat up all of the extra algae as it appears.", correct:false},
+      {t:"Raise the lake's water temperature to speed the algae's growth.", correct:false},
+      {t:"Introduce a new predator species that has never lived in the lake.", correct:false}
+    ],
+    vocab:["eutrophication","algal bloom","nutrient pollution","human impact"],
+    explain:"Identify the actual cause named in the scenario: excess nutrients entering the water. The best solution addresses that cause at its source rather than treating symptoms or adding new risks like a non-native species. Match the fix to the root problem." },
+
+  { id:"E5", domain:DOMAIN_KEYS.ECO, std:"SB5e", dok:2, type:"single", points:1,
+    stem:"A fish species survives only in water between 15\u00B0C and 25\u00B0C. A river warms steadily from 22\u00B0C to 30\u00B0C over several years. What is the most likely outcome for this fish?",
+    options:[
+      {t:"It will struggle to survive as conditions move past its tolerance range.", correct:true},
+      {t:"It will instantly evolve a new ability to prefer the warmer water.", correct:false},
+      {t:"Its population will grow because warmer water is always beneficial.", correct:false},
+      {t:"Nothing about the population will change, because water temperature has no real effect on these fish.", correct:false}
+    ],
+    vocab:["tolerance range","limiting factor","abiotic factor"],
+    explain:"Compare the river's new temperatures with the range the fish can tolerate, then decide what happens once the environment moves past that limit. Organisms do not evolve instantly within one lifetime, and warmer is not automatically better." },
+
+  { id:"E6", domain:DOMAIN_KEYS.ECO, std:"SB5a", dok:2, type:"multi", points:1, choose:2,
+    stem:"Select the TWO factors that are density-dependent (their effect grows stronger as a population becomes more crowded).",
+    options:[
+      {t:"Spread of an infectious disease", correct:true},
+      {t:"Competition for limited food", correct:true},
+      {t:"A sudden volcanic eruption", correct:false},
+      {t:"A severe, unexpected winter freeze", correct:false},
+      {t:"A lightning-caused wildfire", correct:false}
+    ],
+    vocab:["density-dependent","density-independent","population"],
+    explain:"For each factor ask: does crowding make it worse? Things that spread between individuals, or resources that organisms must share, intensify as a population grows. Sudden physical events strike regardless of how crowded the population is. Pick the two whose impact depends on density." },
+
+  { id:"E7", domain:DOMAIN_KEYS.ECO, std:"SB5b", dok:2, type:"dragdrop", points:2,
+    stem:"Match each grassland organism to its role in the flow of energy.",
+    tiles:["Grass","Grasshopper","Hawk","Fungi and bacteria"],
+    zones:["Producer","Primary consumer","Secondary/tertiary consumer","Decomposer"],
+    map:{ "Producer":"Grass", "Primary consumer":"Grasshopper", "Secondary/tertiary consumer":"Hawk", "Decomposer":"Fungi and bacteria" },
+    vocab:["producer","consumer","decomposer","trophic level","food web"],
+    explain:"Follow the energy. Producers make their own food; the organism that eats the producer is the primary consumer; what eats that consumer sits higher up; and organisms that break down dead matter are decomposers. Place each one by what it eats and where its energy comes from." },
+
+  /* ---------------- THEORY OF EVOLUTION (SB6) — 6 pts ---------------- */
+  { id:"V1", domain:DOMAIN_KEYS.EVO, std:"SB6e", dok:3, type:"single", points:1,
+    stem:"A patient takes antibiotics; the bacteria die off at first, but weeks later an infection returns that the same antibiotic no longer cures. Which explanation best fits natural selection?",
+    options:[
+      {t:"A few resistant bacteria survived the drug and reproduced, passing resistance on.", correct:true},
+      {t:"The antibiotic actively taught the surviving bacteria how to resist it on demand.", correct:false},
+      {t:"Every bacterium individually changed at the same time so all became resistant together.", correct:false},
+      {t:"The bacteria deliberately chose to mutate because they recognized the need to survive.", correct:false}
+    ],
+    vocab:["natural selection","antibiotic resistance","allele","adaptation","mutation"],
+    explain:"Natural selection acts on variation that already exists; it does not let individuals change on purpose or in response to need. Find the option where pre-existing resistant individuals survive and reproduce while the rest die. Reject any wording that says organisms choose to mutate or that the drug instructs them." },
+
+  { id:"V2", domain:DOMAIN_KEYS.EVO, std:"SB6c", dok:1, type:"single", points:1,
+    stem:"The forelimbs of a human, a whale, and a bat have the same internal bone arrangement but very different functions. Structures like these are called:",
+    options:[
+      {t:"homologous structures, inherited from a shared common ancestor.", correct:true},
+      {t:"analogous structures, which evolved separately for a similar job.", correct:false},
+      {t:"vestigial structures, which no longer serve any function at all.", correct:false},
+      {t:"fossilized structures, which are found only inside rock layers.", correct:false}
+    ],
+    vocab:["homologous structure","analogous structure","vestigial structure","common ancestor"],
+    explain:"Focus on the clue: same underlying structure, different uses. That points to shared ancestry rather than separate origins. Recall which term means 'same structure from a common ancestor' versus 'similar function that evolved independently,' and match the definition to the example." },
+
+  { id:"V3", domain:DOMAIN_KEYS.EVO, std:"SB6d", dok:2, type:"single", points:1,
+    stem:"A storm kills most of a beetle population by chance, and the survivors happen to be mostly green rather than brown, with no survival advantage to being green. This shift in color frequency is an example of:",
+    options:[
+      {t:"genetic drift, a random change in allele frequencies.", correct:true},
+      {t:"natural selection favoring the most fit beetles.", correct:false},
+      {t:"an acquired trait passed directly to the offspring.", correct:false},
+      {t:"a beneficial mutation appearing in every beetle at once.", correct:false}
+    ],
+    vocab:["genetic drift","bottleneck","allele frequency","natural selection"],
+    explain:"The scenario stresses that survival was by chance, not because green beetles were better suited. Decide which mechanism changes allele frequencies randomly versus which one is driven by an advantage. The word 'chance' is doing the work here." },
+
+  { id:"V4", domain:DOMAIN_KEYS.EVO, std:"SB6b", dok:2, type:"single", points:1,
+    stem:"A river permanently splits one squirrel population into two groups that can no longer interbreed. Over many generations they diverge until they can no longer produce fertile offspring together. This process is called:",
+    options:[
+      {t:"speciation brought about by reproductive isolation.", correct:true},
+      {t:"extinction of the original squirrel population.", correct:false},
+      {t:"artificial selection carried out by human breeders.", correct:false},
+      {t:"ecological succession of one community into another.", correct:false}
+    ],
+    vocab:["speciation","reproductive isolation","gene flow","population"],
+    explain:"Two groups are separated, stop exchanging genes, and diverge until they cannot interbreed. Ask what biologists call the formation of a new species, and what the geographic barrier did to gene flow. Separate it from terms about dying out, human breeding, or community change." },
+
+  { id:"V5", domain:DOMAIN_KEYS.EVO, std:"SB6c", dok:2, type:"dragdrop", points:2,
+    stem:"Match each example to the type of evidence for common ancestry it best represents.",
+    tiles:["Similar early embryos in fish, chickens, and humans","Nearly identical cytochrome c protein across many species","The same forelimb bones in cats, whales, and bats","A pelvis and leg bones in modern whales that are never used to walk"],
+    zones:["Embryological evidence","Molecular / biochemical evidence","Homologous (anatomical) evidence","Vestigial structure"],
+    map:{ "Embryological evidence":"Similar early embryos in fish, chickens, and humans", "Molecular / biochemical evidence":"Nearly identical cytochrome c protein across many species", "Homologous (anatomical) evidence":"The same forelimb bones in cats, whales, and bats", "Vestigial structure":"A pelvis and leg bones in modern whales that are never used to walk" },
+    vocab:["embryological evidence","molecular evidence","homologous structure","vestigial structure","common descent"],
+    explain:"Sort by what kind of evidence each example is. Early-development similarities are one category; shared proteins or DNA are another; matching bone structures are anatomical; and leftover structures with no current use are vestigial. Match each example to the evidence type it fits." }
+];
+
+/* =========================================================
+   ENGINE
+   ========================================================= */
+var state = {
+  name:"",
+  i:0,
+  results:[],            // per item: {id, domain, points, earned, correct}
+  vocabFlags:{},         // term -> true (deduped)
+  shuffledOptions:{},    // id -> shuffled options array (for single/multi)
+  placement:{},          // id -> {zone: tile}
+  picked:null,           // currently picked tile (dragdrop)
+  locked:false,
+  submitted:false
+};
+
+function el(id){ return document.getElementById(id); }
+function shuffle(a){ a=a.slice(); for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1));var t=a[k];a[k]=a[j];a[j]=t;} return a; }
+
+/* ---- domain totals (computed from bank) ---- */
+var DOMAIN_TOTALS = {};
+ITEMS.forEach(function(it){ DOMAIN_TOTALS[it.domain]=(DOMAIN_TOTALS[it.domain]||0)+it.points; });
+var TOTAL_POINTS = ITEMS.reduce(function(s,it){return s+it.points;},0);
+
+/* ---- start ---- */
+el("start").addEventListener("click", function(){
+  var n = el("name").value.trim();
+  if(!n){ el("name").focus(); el("name").style.borderColor="var(--flag)"; return; }
+  state.name = n;
+  el("intro").classList.add("hide");
+  el("test").classList.remove("hide");
+  renderQuestion();
+});
+el("name").addEventListener("keydown", function(e){ if(e.key==="Enter") el("start").click(); });
+
+/* ---- render one question ---- */
+function renderQuestion(){
+  var it = ITEMS[state.i];
+  state.locked=false; state.picked=null;
+  el("count").textContent = "Question "+(state.i+1)+" of "+ITEMS.length;
+  el("spinefill").style.width = ((state.i)/ITEMS.length*100)+"%";
+  el("feedback").innerHTML="";
+  el("nextBtn").classList.add("hide");
+  var sub = el("submitAns"); sub.classList.remove("hide"); sub.disabled=true;
+
+  var typeLabel = it.type==="single" ? "Multiple choice"
+                : it.type==="multi"  ? "Select two"
+                : "Match the items";
+  el("qtype").textContent = typeLabel;
+  el("stem").innerHTML = it.stem;
+
+  var area = el("answerArea");
+  area.innerHTML="";
+
+  if(it.type==="single" || it.type==="multi"){
+    if(!state.shuffledOptions[it.id]) state.shuffledOptions[it.id]=shuffle(it.options);
+    var opts = state.shuffledOptions[it.id];
+    var input = it.type==="single" ? "radio":"checkbox";
+    var box=document.createElement("div"); box.className="opts";
+    opts.forEach(function(o,idx){
+      var lab=document.createElement("label"); lab.className="opt"; lab.tabIndex=0;
+      lab.innerHTML='<input type="'+input+'" name="opt" value="'+idx+'"><span class="txt">'+o.t+'</span>';
+      box.appendChild(lab);
+    });
+    area.appendChild(box);
+    if(it.type==="multi"){
+      var h=document.createElement("div"); h.className="hint"; h.textContent="Choose exactly two.";
+      area.appendChild(h);
+    }
+    box.addEventListener("change", function(){
+      box.querySelectorAll(".opt").forEach(function(l){ l.classList.toggle("chosen", l.querySelector("input").checked); });
+      var checked = box.querySelectorAll("input:checked").length;
+      sub.disabled = it.type==="single" ? checked<1 : checked!==(it.choose||2);
+    });
+  }
+  else if(it.type==="dragdrop"){
+    if(!state.placement[it.id]) state.placement[it.id]={};
+    var pool=document.createElement("div"); pool.className="pool";
+    shuffle(it.tiles).forEach(function(tile){
+      var b=document.createElement("button"); b.className="tile"; b.type="button"; b.textContent=tile; b.dataset.tile=tile;
+      b.addEventListener("click", function(){ pickTile(it,b,tile); });
+      pool.appendChild(b);
+    });
+    area.appendChild(pool);
+    var zwrap=document.createElement("div"); zwrap.className="zones";
+    it.zones.forEach(function(z){
+      var zd=document.createElement("div"); zd.className="zone"; zd.tabIndex=0; zd.dataset.zone=z;
+      zd.innerHTML='<div class="zlabel">'+z+'</div><div class="slotwrap"></div>';
+      zd.addEventListener("click", function(){ dropTile(it,zd,z); });
+      zd.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault(); dropTile(it,zd,z);} });
+      zwrap.appendChild(zd);
+    });
+    area.appendChild(zwrap);
+    var h2=document.createElement("div"); h2.className="hint"; h2.textContent="Tap a tile, then tap a box to place it. Tap a placed tile to remove it.";
+    area.appendChild(h2);
+    refreshDrag(it,area);
+  }
+
+  // vocab chips
+  var chips=el("vocabChips"); chips.innerHTML="";
+  it.vocab.forEach(function(term){
+    var c=document.createElement("button"); c.type="button"; c.className="chip"+(state.vocabFlags[term]?" on":"");
+    c.innerHTML=(state.vocabFlags[term]?'<span class="x">&#10003;</span>':"")+term;
+    c.addEventListener("click", function(){
+      if(state.vocabFlags[term]) delete state.vocabFlags[term]; else state.vocabFlags[term]=true;
+      c.classList.toggle("on"); c.innerHTML=(state.vocabFlags[term]?'<span class="x">&#10003;</span>':"")+term;
+    });
+    chips.appendChild(c);
+  });
+}
+
+/* ---- dragdrop helpers ----
+   placement model: state.placement[id] = { zoneName: [tiles...] }
+   Group-sort items (a zone accepts several tiles) are detected when any
+   map value is an array; those zones hold multiple tiles. One-to-one
+   match items hold a single tile per zone (placing replaces). */
+function isGrouped(it){ return Object.keys(it.map).some(function(z){ return Array.isArray(it.map[z]); }); }
+
+function pickTile(it,btn,tile){
+  if(state.locked) return;
+  if(state.picked===tile){ state.picked=null; btn.classList.remove("picked"); return; }
+  state.picked=tile;
+  el("answerArea").querySelectorAll(".tile").forEach(function(t){ t.classList.toggle("picked", t.dataset.tile===tile); });
+}
+function dropTile(it,zoneEl,zone){
+  if(state.locked || !state.picked) return;
+  var pl=state.placement[it.id];
+  // remove the picked tile from wherever it currently sits
+  Object.keys(pl).forEach(function(z){ pl[z]=(pl[z]||[]).filter(function(t){ return t!==state.picked; }); });
+  if(!pl[zone]) pl[zone]=[];
+  if(isGrouped(it)) pl[zone].push(state.picked);
+  else pl[zone]=[state.picked];   // one-to-one: replace
+  state.picked=null;
+  refreshDrag(it, el("answerArea"));
+}
+function refreshDrag(it,area){
+  var pl=state.placement[it.id]||{};
+  var used={};
+  area.querySelectorAll(".zone").forEach(function(zd){
+    var z=zd.dataset.zone; var sw=zd.querySelector(".slotwrap"); sw.innerHTML="";
+    (pl[z]||[]).forEach(function(tile){
+      used[tile]=true;
+      var s=document.createElement("span"); s.className="slot"; s.textContent=tile;
+      var x=document.createElement("button"); x.type="button"; x.innerHTML="&times;"; x.setAttribute("aria-label","remove");
+      x.addEventListener("click", function(e){ e.stopPropagation(); if(state.locked) return; pl[z]=pl[z].filter(function(t){ return t!==tile; }); refreshDrag(it,area); });
+      s.appendChild(x); sw.appendChild(s);
+    });
+  });
+  area.querySelectorAll(".tile").forEach(function(t){
+    t.classList.toggle("placed", !!used[t.dataset.tile]);
+    t.classList.toggle("picked", state.picked===t.dataset.tile);
+  });
+  // enable submit once every tile has been placed somewhere
+  el("submitAns").disabled = Object.keys(used).length < it.tiles.length;
+}
+
+/* ---- submit an answer ---- */
+el("submitAns").addEventListener("click", function(){
+  if(state.locked) return;
+  var it=ITEMS[state.i];
+  var correct=false;
+
+  if(it.type==="single"){
+    var sel=el("answerArea").querySelector("input:checked");
+    var chosen=state.shuffledOptions[it.id][parseInt(sel.value,10)];
+    correct = !!chosen.correct;
+  } else if(it.type==="multi"){
+    var picks=[].slice.call(el("answerArea").querySelectorAll("input:checked")).map(function(n){return state.shuffledOptions[it.id][parseInt(n.value,10)];});
+    var need=it.options.filter(function(o){return o.correct;}).length;
+    correct = picks.length===need && picks.every(function(p){return p.correct;});
+  } else { // dragdrop
+    var pl=state.placement[it.id]||{};
+    if(isGrouped(it)){
+      correct = Object.keys(it.map).every(function(zone){
+        var want=it.map[zone].slice().sort().join("|");
+        var got=(pl[zone]||[]).slice().sort().join("|");
+        return want===got;
+      });
+    } else {
+      correct = Object.keys(it.map).every(function(zone){
+        return (pl[zone]||[]).length===1 && pl[zone][0]===it.map[zone];
+      });
+    }
+  }
+
+  // record
+  state.results.push({ id:it.id, domain:it.domain, points:it.points, earned: correct?it.points:0, correct:correct });
+  state.locked=true;
+
+  // lock inputs
+  el("answerArea").querySelectorAll("input,.tile,.zone,.slot button").forEach(function(n){ n.disabled=true; n.classList.add("locked"); });
+  el("submitAns").classList.add("hide");
+
+  // feedback
+  var fb=el("feedback");
+  if(correct){
+    fb.innerHTML='<div class="feedback recorded"><h3>Answer recorded \u2713</h3><p style="margin:0">Nice work. Move on when you are ready.</p></div>';
+  } else {
+    var revealHtml="";
+    if(REVEAL_CORRECT_ANSWER){ revealHtml=buildRevealHtml(it); markCorrectInDom(it); }
+    fb.innerHTML='<div class="feedback teach"><h3>Let\'s work through this one</h3><p style="margin:0 0 '+(revealHtml?".6rem":"0")+'">'+it.explain+'</p>'+revealHtml+'</div>';
+  }
+  el("nextBtn").classList.remove("hide");
+  el("spinefill").style.width = ((state.i+1)/ITEMS.length*100)+"%";
+});
+
+function buildRevealHtml(it){
+  if(it.type==="single"){
+    var c=it.options.filter(function(o){return o.correct;})[0];
+    return '<p style="margin:0;font-weight:600;color:var(--good)">Correct answer: '+c.t+'</p>';
+  }
+  if(it.type==="multi"){
+    var cs=it.options.filter(function(o){return o.correct;}).map(function(o){return o.t;});
+    return '<p style="margin:0;font-weight:600;color:var(--good)">Correct: '+cs.join("; ")+'</p>';
+  }
+  // dragdrop
+  var rows=Object.keys(it.map).map(function(z){
+    var w=it.map[z]; w=Array.isArray(w)?w.join(", "):w;
+    return '<li><strong>'+z+':</strong> '+w+'</li>';
+  }).join("");
+  return '<ul style="margin:.3rem 0 0;padding-left:1.1rem;color:var(--good)">'+rows+'</ul>';
+}
+function markCorrectInDom(it){
+  if(it.type==="single"||it.type==="multi"){
+    var opts=state.shuffledOptions[it.id];
+    el("answerArea").querySelectorAll(".opt").forEach(function(lab,idx){
+      if(opts[idx].correct) lab.classList.add("reveal-correct");
+    });
+  }
+}
+
+/* ---- next / finish ---- */
+el("nextBtn").addEventListener("click", function(){
+  state.i++;
+  if(state.i<ITEMS.length){ renderQuestion(); window.scrollTo({top:0,behavior:"smooth"}); }
+  else finish();
+});
+
+function levelFor(pct){
+  for(var k=0;k<LEVEL_BANDS.length;k++){ if(pct>=LEVEL_BANDS[k].min) return LEVEL_BANDS[k].name; }
+  return LEVEL_BANDS[LEVEL_BANDS.length-1].name;
+}
+
+function finish(){
+  el("test").classList.add("hide");
+  el("results").classList.remove("hide");
+  window.scrollTo({top:0,behavior:"smooth"});
+
+  var earned=state.results.reduce(function(s,r){return s+r.earned;},0);
+  var pct=Math.round(earned/TOTAL_POINTS*100);
+  var level=levelFor(pct);
+
+  // domain rollup
+  var dom={};
+  Object.keys(DOMAIN_TOTALS).forEach(function(d){ dom[d]={correct:0,total:DOMAIN_TOTALS[d]}; });
+  state.results.forEach(function(r){ dom[r.domain].correct+=r.earned; });
+
+  el("resName").textContent=state.name;
+  el("resPct").textContent=pct;
+  el("resCorrect").textContent=earned;
+  el("resTotal").textContent=TOTAL_POINTS;
+  el("resLevel").textContent=level;
+
+  var tb=el("domBody"); tb.innerHTML="";
+  Object.keys(dom).forEach(function(d){
+    var p=Math.round(dom[d].correct/dom[d].total*100);
+    var tr=document.createElement("tr");
+    tr.innerHTML='<td>'+d+'</td><td>'+dom[d].correct+'/'+dom[d].total+' ('+p+'%)</td>'+
+                 '<td><span class="bar"><span style="width:'+p+'%"></span></span></td>';
+    tb.appendChild(tr);
+  });
+
+  var payload={
+    studentName: state.name,
+    overallScore: pct,
+    correctItems: earned,
+    totalItems: TOTAL_POINTS,
+    achievementLevel: level,
+    domains: dom,
+    vocabFlags: Object.keys(state.vocabFlags)
+  };
+  state.payload=payload;
+  submitResults(payload);
+}
+
+/* ---- submit results ----
+   Loads the /exec?data=... URL in a hidden iframe. This is a real navigation
+   that follows Google's 302 redirect and runs doGet, exactly like pasting the
+   URL in the address bar (the path we verified writes a row). It works from
+   https hosting and from file://, and is not dropped the way background
+   fetch()/image beacons can be by privacy blockers or opaque origins.
+   CORS only blocks READING the response, which we don't need. */
+function submitResults(payload){
+  var url=WEBAPP_URL+"?data="+encodeURIComponent(JSON.stringify(payload));
+  var done=false;
+  function settle(){
+    if(done) return; done=true;
+    el("submitStatus").innerHTML='Results sent to your teacher. If they don\u2019t appear, tap <strong>Send again</strong>.';
+    el("resubmit").classList.remove("hide");
+  }
+  // clear any previous submit frame
+  var old=document.getElementById("submitFrame"); if(old) old.parentNode.removeChild(old);
+  var f=document.createElement("iframe");
+  f.id="submitFrame";
+  f.style.display="none";
+  f.onload=settle;
+  f.onerror=settle;
+  f.src=url;
+  document.body.appendChild(f);
+  setTimeout(settle,6000); // safety: never leave the spinner stuck
+}
+el("resubmit").addEventListener("click", function(){
+  el("submitStatus").textContent="Sending again\u2026";
+  el("resubmit").classList.add("hide");
+  submitResults(state.payload);
+});
+</script>
+</body>
+</html>
